@@ -1,7 +1,7 @@
 # Большое путешествие — Trip Planner Application
 
 ## Live Demo
-
+https://44605-big-trip-2.vercel.app/
 
 ## GitHub
 https://github.com/htmlacademy-ecmascript/44605-big-trip-2
