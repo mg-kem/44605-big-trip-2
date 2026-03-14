@@ -1,52 +1,107 @@
-# Проект «Большое путешествие»
+# Большое путешествие — Trip Planner Application
 
-- Студент: [Дмитрий Гилёв](https://up.htmlacademy.ru/ecmascript-individual/2/user/44605).
-- Наставник: [Станислав Михайлов](https://htmlacademy.ru/profile/id139638).
+## Live Demo
 
----
 
-_Не удаляйте и не изменяйте папки и файлы:_
-_`.editorconfig`, `.gitattributes`._
+## GitHub
+https://github.com/htmlacademy-ecmascript/44605-big-trip-2
 
 ---
 
-### Памятка
+## О проекте
 
-#### 1. Зарегистрируйтесь на Гитхабе
+«Большое путешествие» — клиентское веб-приложение для планирования маршрута поездки. Пользователь может добавлять точки маршрута (события), выбирать тип (перелёт, поезд, корабль и др.), даты, направления и опции, редактировать и удалять точки. Реализованы фильтрация по типу поездки, сортировка (по дате, времени, цене), расчёт стоимости поездки. Данные загружаются и сохраняются через REST API.
 
-Если у вас ещё нет аккаунта на [github.com](https://github.com/join), скорее зарегистрируйтесь.
+---
 
-#### 2. Создайте форк
+## Стек технологий
 
-Откройте репозиторий и нажмите кнопку «Fork» в правом верхнем углу. Репозиторий из Академии будет скопирован в ваш аккаунт.
+| Категория | Технология |
+|-----------|-------------|
+| **Язык** | JavaScript (ES6+) |
+| **Сборка** | Webpack 5 |
+| **Даты** | dayjs, dayjs-plugin-utc |
+| **Выбор даты/времени** | flatpickr |
+| **Архитектура** | MVP (Model-View-Presenter) |
+| **HTTP** | Fetch API (через ApiService) |
 
-<img width="769" alt="Press 'Fork'" src="https://cloud.githubusercontent.com/assets/259739/20264045/a1ddbf40-aa7a-11e6-9a1a-724a1c0123c8.png">
+---
 
-Получится вот так:
+## Features
 
-<img width="769" alt="Forked" src="https://cloud.githubusercontent.com/assets/259739/20264122/f63219a6-aa7a-11e6-945a-89818fc7c014.png">
+- загрузка точек маршрута с REST API
+- добавление, редактирование и удаление точек
+- фильтрация по типу поездки
+- сортировка по дате, времени, цене
+- расчёт общей стоимости поездки
+- блокировка UI во время запросов к API
+- кастомный фреймворк представлений (AbstractView, Observable)
 
-#### 3. Клонируйте репозиторий на свой компьютер
+---
 
-Будьте внимательны: нужно клонировать свой репозиторий (форк), а не репозиторий Академии. Также обратите внимание, что клонировать репозиторий нужно через SSH, а не через HTTPS. Нажмите зелёную кнопку в правой части экрана, чтобы скопировать SSH-адрес вашего репозитория:
+## Architecture
 
-<img width="769" alt="SSH" src="https://cloud.githubusercontent.com/assets/259739/20264180/42704126-aa7b-11e6-9ab4-73372b812a53.png">
+Проект построен по принципу MVP:
 
-Клонировать репозиторий можно так:
+- **Model** — данные (PointsModel, FilterModel) и работа с API (PointApiService)
+- **View** — отображение (view-компоненты: PointView, FilterView, SortView и др.)
+- **Presenter** — связь Model и View, обработка действий пользователя (BoardPresenter, PointPresenter, FilterPresenter и др.)
 
+Используются:
+
+- абстрактные классы представлений (`src/framework/view/`)
+- наблюдатель (Observable) для обновления состояния
+- единый ApiService с поддержкой авторизации
+
+---
+
+## Структура приложения и поток данных
+
+### Точка входа
+
+**`src/main.js`** — инициализация приложения:
+
+- Создаёт экземпляры `PointsModel` (с внедрённым `PointApiService`) и `FilterModel`.
+- Создаёт `BoardPresenter` с контейнерами для шапки (`.trip-main`) и списка точек (`.trip-events`).
+- Вызывает `boardPresenter.init()` и `pointsModel.init()` — загрузка точек с API и отрисовка интерфейса.
+
+### Presenters и View
+
+- **BoardPresenter** — координирует HeaderPresenter, FilterPresenter, SortView, список точек (PointPresenter / NewPointPresenter), отображает итоговую информацию о поездке и кнопку добавления точки.
+- **PointPresenter** — одна точка маршрута: отображает PointView, при клике на редактирование — PointEditView, обрабатывает обновление/удаление через модель.
+- **NewPointPresenter** — форма создания новой точки (NewPointView).
+- **FilterPresenter** — фильтры по типу поездки, синхронизация с FilterModel.
+- **HeaderPresenter** — информация о маршруте (TripInformationView), кнопка «New event».
+
+### Модели и сервисы
+
+- **PointsModel** — список точек маршрута, методы добавления/обновления/удаления, подписка на изменения (Observable). При инициализации запрашивает точки с API.
+- **FilterModel** — текущий выбранный фильтр.
+- **PointApiService** (наследует **ApiService**) — запросы к API: точки маршрута, направления, предложения; авторизация через заголовок.
+
+### Константы и утилиты
+
+- **`src/const.js`** — API_URL, AUTHORIZATION, форматы дат (dayjs), типы сортировки, действия пользователя (UserAction), типы обновления (UpdateType), статусы формы и др.
+- **`src/utils.js`** — вспомогательные функции (в т.ч. для дат и сортировки).
+- **`src/framework/`** — AbstractView, AbstractStatefulView, Observable, render, ApiService, UiBlocker.
+
+### Сборка
+
+- **Webpack** — конфигурация в `webpack.config.js`, dev-сервер с hot reload, сборка для production.
+
+---
+
+## Запуск и сборка
+
+```bash
+npm install   # установка зависимостей
+npm start     # dev-сервер (Webpack)
+npm run build # сборка для production
+npm run lint  # проверка линтером (ESLint)
 ```
-git clone SSH-адрес_вашего_форка
-```
-
-Команда клонирует репозиторий на ваш компьютер и подготовит всё необходимое для старта работы.
-
-#### 4. Начинайте обучение!
 
 ---
 
 <a href="https://htmlacademy.ru/intensive/ecmascript"><img align="left" width="50" height="50" title="HTML Academy" src="https://up.htmlacademy.ru/static/img/intensive/ecmascript/logo-for-github.svg"></a>
 
-Репозиторий создан для обучения на профессиональном курсе «[JavaScript. Архитектура клиентских приложений](https://htmlacademy.ru/intensive/ecmascript)» от [HTML Academy](https://htmlacademy.ru).
-
-[check-image]: https://github.com/htmlacademy-ecmascript/44605-big-trip-2/workflows/Project%20check/badge.svg?branch=master
-[check-url]: https://github.com/htmlacademy-ecmascript/44605-big-trip-2/actions
+Репозиторий создан для обучения на профессиональном курсе «[JavaScript. Архитектура клиентских приложений](https://htmlacademy.ru/intensive/ecmascript)» от [HTML Academy](https://htmlacademy.ru).
